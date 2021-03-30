@@ -7,18 +7,20 @@ namespace ClassChanger
 		string m_desc;
 		int m_orePrice;
 		array<string> m_flags;
+		string m_flagDesc;
 
 		ClassEntry(UnitPtr unit, SValue& params)
 		{
 			m_id = GetParamString(unit, params, "class-id");
 			m_name = GetParamString(unit, params, "name");
-			//m_desc = GetParamString(unit, params, "desc");
+			m_desc = GetParamString(unit, params, "desc");
 			m_orePrice = GetParamInt(unit, params, "ore-price");
 			auto arrFlags = GetParamArray(unit, params, "flags");
 			for (uint j = 0; j < arrFlags.length(); j++){
 				m_flags.insertLast(arrFlags[j].GetString());
 				//print(m_flags[j]);
 			}
+			m_flagDesc = GetParamString(unit, params, "flag-desc");
 		}
 	}
 

@@ -19,16 +19,34 @@
 	</sprites>
 
 	<doc>
-		<rect width="400" height="186" inner="true" anchor="0.5 0.5" spriteset="gui/variable/bigwindow_borders.sval">
-		
+	<group>
+		<rect width="400" height="204" anchor="0.5 0.5" spriteset="gui/variable/bigwindow_borders.sval">
+			<!-- Header -->
+			<rect width="400" height="18" offset="0 0" flow="hbox">
+				<!-- Headline -->
+				<rect width="379" height="18" spriteset="gui/variable/headline_hor.sval">
+					<text font="gui/fonts/arial11_bold.fnt" text=".mod.classchanger.menu.title" anchor="0.5 0.5" />
+				</rect>
+
+				<!-- Separator -->
+				<rect width="3" height="18" spriteset="gui/variable/3pxbar_vert.sval" />
+
+				<!-- Close button -->
+				<spritebutton func="close" spriteset="close" />
+			</rect>	
+
+			<!-- Scrollbar -->
+			<rect offset="2 18" width="398" height="3" spriteset="gui/variable/3pxbar_hor.sval" />
+
 			<!-- List -->
-			<scrollrect id="list" width="396" height="184" offset="2 2" flow="vbox" color="#202a26FF" shadow="#0c120fFF" shadowsize="2" />
+			<scrollrect id="list" width="396" height="166" offset="2 20" flow="vbox" color="#202a26FF" shadow="#0c120fFF" shadowsize="2" />
+			
 			<!-- Scrollbar -->
 			<scrollbar forid="list" spriteset="scrollbar" outside="false" offset="-1 0" buttons-size="14" trough-offset="18" handle-border="2" />
 
 			<!-- Separators -->
-			<rect width="3" height="186" offset="386 0" spriteset="gui/variable/3pxbar_vert.sval" />
-			<rect width="3" height="186" offset="397 0" spriteset="gui/variable/3pxbar_vert.sval" />
+			<rect width="3" height="166" offset="386 20" spriteset="gui/variable/3pxbar_vert.sval" />
+			<rect width="3" height="166" offset="397 20" spriteset="gui/variable/3pxbar_vert.sval" />
 		
 			<!-- Bottom bar -->
 			<rect offset="0 186" width="286" height="18" flow="hbox">
@@ -56,8 +74,9 @@
 				</scalebutton>
 
 				<!-- Separator -->
-				<rect width="382" height="3" offset="0 36" spriteset="gui/variable/3pxbar_hor.sval" />
+				<rect width="383" height="3" offset="0 36" spriteset="gui/variable/3pxbar_hor.sval" />
 			</rect>
 		</rect>
+	</group>
 	</doc>
 </gui>

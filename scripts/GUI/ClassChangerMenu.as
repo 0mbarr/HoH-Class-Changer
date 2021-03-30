@@ -1,20 +1,21 @@
 
 namespace ClassChanger
 {
-	class ClassChangerMenuContent : ShopMenuContent
+	class ClassChangerMenuContent : ScriptWidgetHost
 	{
 		ScrollableWidget@ m_wList;
 		Widget@ m_wTemplate;
+		GroupWidget@ m_wGroupRectWidget;
 		
 		Sprite@ m_spriteGold;
 		Sprite@ m_spriteOre;
 
-		ClassChangerMenuContent(UnitPtr unit, SValue& params)
+		ClassChangerMenuContent(SValue& sval)
 		{
 			super();
 		}
 		
-		void OnShow() override
+		void Initialize(bool loaded) override
 		{
 			@m_wList = cast<ScrollableWidget>(m_widget.GetWidgetById("list"));
 			@m_wTemplate = m_widget.GetWidgetById("template");
@@ -25,12 +26,10 @@ namespace ClassChanger
 			ReloadList();
 		}
 
-		string GetTitle() override
-		{
-			return Resources::GetString(".mod.classchanger.menu.title");
-		}
+		bool ShouldFreezeControls() override { return true; }
+   		bool ShouldDisplayCursor() override { return true; }
 		
-		void ReloadList() override
+		void ReloadList()
 		{
 			m_wList.PauseScrolling();
 			m_wList.ClearChildren();
@@ -44,6 +43,7 @@ namespace ClassChanger
 				auto customClass = g_classes[i];
 				bool classUnlocked = false;
 				bool requiredFlags = true;
+				string flagText;
 
 				//Template Widget
 				auto wNewClass = m_wTemplate.Clone();
@@ -67,7 +67,10 @@ namespace ClassChanger
 						auto className = customClass.m_name;
 						//print(customClass.m_name);
 						if (className != "")
+						{
 							wName.SetText(className);
+							wName.m_tooltipText = customClass.m_desc;
+						}
 						else
 							wName.SetText("Undefined Class");
 						
@@ -96,14 +99,17 @@ namespace ClassChanger
 						{
 							//print(customClass.m_name + " needs level " + parseFlag[1] + " " + parseFlag[0]);
 							requiredFlags = IsBuildingLevel(parseFlag[0], parseFlag[1]);
+							flagText = "Requires: " + customClass.m_flagDesc;
 						}
 						else if (parseFlag[0] == "dlc")
 						{
 							requiredFlags = Platform::HasDLC(parseFlag[1]);
+							flagText = "Requires: " + customClass.m_flagDesc;
 						}
 						else 
 						{
 							requiredFlags = IsFlagSet(flag);
+							flagText = "Requires: " + customClass.m_flagDesc;
 						}
 					}
 				}
@@ -125,7 +131,10 @@ namespace ClassChanger
 					wButtonUnlock.AddTooltipSub(m_spriteOre, formatThousands(unlockCost));
 					
 					if (!Currency::CanAfford(0, unlockCost) || requiredFlags == false || classUnlocked == true)
+					{
 						wButtonUnlock.m_enabled = false;
+						wButtonUnlock.m_tooltipText = flagText;
+					}
 					else
 						wButtonUnlock.m_func = "unlock " + customClass.m_id;
 				}
@@ -140,7 +149,11 @@ namespace ClassChanger
 					wButtonBuy.AddTooltipSub(m_spriteGold, formatThousands(trainCost));
 
 					if (!Currency::CanAfford(trainCost) || classUnlocked == false)
+					{
 						wButtonBuy.m_enabled = false;
+						wButtonBuy.m_tooltipText = Resources::GetString(".mod.classchanger.menu.buy.disabled");
+
+					}
 					else
 						wButtonBuy.m_func = "train " + customClass.m_id;
 				}
@@ -148,9 +161,14 @@ namespace ClassChanger
 			}
 			
 			m_wList.ResumeScrolling();
-			m_shopMenu.DoLayout();
+			DoLayout();
 
 		}
+
+		void Update(int dt) override
+	    {
+	        ScriptWidgetHost::Update(dt);
+	    }
 
 		int GetPrice()
 		{
@@ -237,13 +255,7 @@ namespace ClassChanger
 			record.charClass = newClass;
 			player.Initialize(record);
 			(Network::Message("PlayerChangeClass") << newClass).SendToAll();
-			//Stop();
-		}
-		
-		
-		string GetGuiFilename() override
-		{
-			return "gui/changeMenu/class_changer.gui";
+			Stop();
 		}
 
 		void OnFunc(Widget@ sender, string name) override
@@ -263,7 +275,7 @@ namespace ClassChanger
 				int unlockCost = GetOrePrice(parse[1]);
 				Currency::Spend(0, unlockCost);
 				ReloadList();
-				m_shopMenu.DoLayout();
+				DoLayout();
 			}
 			else if (parse[0] == "train")
 			{
@@ -278,7 +290,7 @@ namespace ClassChanger
 						//print("Now Changing to " + parse[1] + " class...");
 						ReloadList();
 						ClassChange(parse[1]);
-						ShopMenuContent::OnFunc(sender, "close");
+						ScriptWidgetHost::OnFunc(sender, "close");
 				}
 				else if (parse.length() == 2)
 				{
@@ -289,12 +301,17 @@ namespace ClassChanger
 						}),
 						Resources::GetString(".menu.yes"),
 						Resources::GetString(".menu.no"),
-						m_shopMenu
+						this
 					);
 				}
+				
+			}
+			else if(parse[0] == "close")
+			{
+				Stop();
 			}
 			else
-			ShopMenuContent::OnFunc(sender, name);
+			ScriptWidgetHost::OnFunc(sender, name);
 		}
 	}
 }
